@@ -15,5 +15,5 @@ RUN npm install -g sass postcss-cli postcss autoprefixer
 RUN pip3 install \
         pymysql mysqlclient websocket-client uwsgi django-redis redis
 
-COPY online-judge/requirements.txt .
+COPY dmoj/requirements.txt .
 RUN pip3 install -r requirements.txt
