@@ -24,10 +24,17 @@ INSTALLED_APPS += ()
 
 # Caching. You can use memcached or redis instead.
 # Documentation: <https://docs.djangoproject.com/en/1.11/topics/cache/>
+REDIS_USERNAME = os.environ.get("REDIS_USERNAME", None)
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", None)
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis:6379/1")
+REDIS_LOCATION = "redis://"
+if REDIS_USERNAME is not None and REDIS_PASSWORD is not None:
+    REDIS_LOCATION += f"{REDIS_USERNAME}:{REDIS_PASSWORD}@"
+REDIS_LOCATION += REDIS_HOST
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
+        "LOCATION": REDIS_LOCATION,
     }
 }
 
