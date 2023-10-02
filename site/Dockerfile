@@ -2,10 +2,38 @@ FROM ninjaclasher/dmoj-base:latest
 
 EXPOSE 8000
 
-RUN git clone --depth=1 https://github.com/DMOJ/online-judge /site
+RUN git clone --depth=1 https://github.com/DMOJ/online-judge.git /site
+RUN pip3 install gunicorn
+
+ENV HOST=localhost
+ENV DEBUG=1
+ENV SECRET_KEY=chom
+ENV DJANGO_SETTINGS_MODULE=dmoj.settings
 
 WORKDIR /site
 
-COPY uwsgi.ini .
+RUN git submodule update --init --recursive
+RUN mkdir /pdfcache
+RUN mkdir /datacache
 
-ENTRYPOINT uwsgi --ini uwsgi.ini
+COPY gunicorn.py /site/gunicorn.py
+COPY config.js /site/websocket/config.js
+COPY local_settings.py /site/dmoj/local_settings.py
+# COPY uwsgi.ini /site/uwsgi.ini
+
+RUN python3 manage.py migrate
+RUN bash make_style.sh
+RUN python3 manage.py collectstatic --noinput
+RUN python3 manage.py compilemessages
+RUN python3 manage.py compilejsi18n
+RUN cp -r resources/ /assets/
+# RUN ls resources/dark
+RUN rm resources/style.css resources/martor-description.css resources/select2-dmoj.css
+RUN rm resources/dark/style.css resources/dark/martor-description.css resources/dark/select2-dmoj.css
+RUN rm -r sass_processed
+RUN cp 502.html /assets/
+RUN cp logo.png /assets/
+RUN cp robots.txt /assets/
+
+ENTRYPOINT gunicorn --config /site/gunicorn.py --pythonpath /site dmoj.wsgi
+# ENTRYPOINT uwsgi --ini uwsgi.ini
