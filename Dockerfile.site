@@ -1,20 +1,18 @@
 FROM ninjaclasher/dmoj-base:latest
 
-EXPOSE 8000
-
-RUN git clone --depth=1 https://github.com/DMOJ/online-judge.git /site
+COPY repo /site/
 RUN pip3 install gunicorn
 
-ENV HOST=localhost
-ENV DEBUG=1
+# ENV HOST=localhost
+# ENV DEBUG=1
 ENV SECRET_KEY=chom
 ENV DJANGO_SETTINGS_MODULE=dmoj.settings
 
 WORKDIR /site
 
-RUN git submodule update --init --recursive
 RUN mkdir /pdfcache
 RUN mkdir /datacache
+RUN mkdir /cache
 
 COPY gunicorn.py /site/gunicorn.py
 COPY config.js /site/websocket/config.js
@@ -34,6 +32,8 @@ RUN rm -r sass_processed
 RUN cp 502.html /assets/
 RUN cp logo.png /assets/
 RUN cp robots.txt /assets/
+
+EXPOSE 8000
 
 ENTRYPOINT gunicorn --config /site/gunicorn.py --pythonpath /site dmoj.wsgi
 # ENTRYPOINT uwsgi --ini uwsgi.ini

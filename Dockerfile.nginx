@@ -1,0 +1,35 @@
+FROM ninjaclasher/dmoj-base:latest as static
+
+RUN mkdir /pdfcache
+RUN mkdir /datacache
+RUN mkdir /cache
+
+COPY repo /site/
+COPY local_settings.py /site/dmoj/local_settings.py
+
+ENV SECRET_KEY=chom
+ENV DJANGO_SETTINGS_MODULE=dmoj.settings
+
+WORKDIR /site
+
+RUN python3 manage.py migrate
+RUN bash make_style.sh
+RUN python3 manage.py collectstatic --noinput
+RUN python3 manage.py compilemessages
+RUN python3 manage.py compilejsi18n
+# RUN cp -r resources/ /assets/
+# RUN rm resources/style.css resources/martor-description.css resources/select2-dmoj.css
+# RUN rm resources/dark/style.css resources/dark/martor-description.css resources/dark/select2-dmoj.css
+# RUN rm -r sass_processed
+RUN cp 502.html /assets/502.html
+RUN cp logo.png /assets/logo.png
+RUN cp robots.txt /assets/robots.txt
+
+FROM docker.io/nginx:1.25.2
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY --from=static /site/resources /assets
+# COPY --from=static /static /static
+COPY --from=static /site/502.html /assets/502.html
+COPY --from=static /site/logo.png /assets/logo.png
+COPY --from=static /site/robots.txt /assets/robots.txt
+# EXPOSE 80
