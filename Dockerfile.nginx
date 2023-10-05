@@ -1,4 +1,4 @@
-FROM ninjaclasher/dmoj-base:latest as static
+FROM ninjaclasher/dmoj-base:latest AS static
 
 RUN mkdir /pdfcache
 RUN mkdir /datacache

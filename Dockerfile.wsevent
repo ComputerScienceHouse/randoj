@@ -1,5 +1,9 @@
 FROM node:alpine
 
+COPY repo /app/site/
+COPY config.js /app/site/websocket/config.js
+COPY local_settings.py /app/site/dmoj/local_settings.py
+
 WORKDIR /app/
 RUN npm install qu ws simplesets
 
